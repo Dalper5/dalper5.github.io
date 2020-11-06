@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css"
+      integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2"
+      crossorigin="anonymous"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:ital,wght@0,400;0,600;0,900;1,400;1,600;1,900&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+    />
+    <link rel="stylesheet" href="css/main.css" />
+
+    <script
+      src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+      integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.min.js"
+      integrity="sha384-w1Q4orYjBQndcko6MimVbzY0tgp4pWB4lZ7lr30WKz0vr/aWKhXdBNmNb5D92v7s"
+      crossorigin="anonymous"
+    ></script>
+
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"
+      integrity="sha512-qTXRIMyZIFb8iQcfjXWCO8+M5Tbc38Qi5WzdPOYZHIlZpzBHG3L3by84BBBOiRGiEb7KKtAOAs5qYdUiZiQNNQ=="
+      crossorigin="anonymous"
+    ></script>
+
+    <title>Argenx</title>
+
+    <!-- Google Tag Manager -->
+    <script>
+      (function (w, d, s, l, i) {
+        w[l] = w[l] || [];
+        w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
+        var f = d.getElementsByTagName(s)[0],
+          j = d.createElement(s),
+          dl = l != "dataLayer" ? "&l=" + l : "";
+        j.async = true;
+        j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
+        f.parentNode.insertBefore(j, f);
+      })(window, document, "script", "dataLayer", "GTM-M6DFJDF");
+    </script>
+    <!-- End Google Tag Manager -->
+
+    <script>
+      $(document).ready(function () {
+        var players = [];
+
+        $(".carousel").carousel({ interval: 5000, pause: false });
+        $(".carousel").carousel("pause");
+
+        var videos = $("iframe").each(function (index) {
+          var player = new Vimeo.Player($(this));
+          player.on("play", function () {
+            console.log($(".carousel"));
+            $(".carousel").carousel("pause");
+
+            player.getVideoTitle().then(function (title) {
+              dataLayer.push({
+                event: "videoPlay",
+                title: title,
+              });
+            });
+          });
+
+          var lowsent = false;
+          var midsent = false;
+          var highsent = false;
+
+          player.on("timeupdate", function (data) {
+            if (data.percent > 0.25 && data.percent < 0.5 && !lowsent) {
+              player.getVideoTitle().then(function (title) {
+                dataLayer.push({
+                  event: "videoProgress",
+                  title: title,
+                  progress: 25,
+                });
+                lowsent = true;
+              });
+            }
+            if (data.percent > 0.5 && data.percent < 0.75 && !midsent) {
+              player.getVideoTitle().then(function (title) {
+                dataLayer.push({
+                  event: "videoProgress",
+                  title: title,
+                  progress: 50,
+                });
+                midsent = true;
+              });
+            }
+            if (data.percent > 0.75 && data.percent < 1 && !highsent) {
+              player.getVideoTitle().then(function (title) {
+                dataLayer.push({
+                  event: "videoProgress",
+                  title: title,
+                  progress: 75,
+                });
+                highsent = true;
+              });
+            }
+          });
+
+          player.on("ended", function () {
+            $(".carousel").carousel("pause");
+
+            player.getVideoTitle().then(function (title) {
+              dataLayer.push({
+                event: "videoEnded",
+                title: title,
+              });
+            });
+          });
+
+          players.push(player);
+        });
+
+        $(".carousel").on("slid.bs.carousel", function (event) {
+          $("#name-plates .name-plate").hide();
+          $("#name-plates .name-plate").eq(event.to).show();
+
+          $("#descriptions .description").hide();
+          $("#descriptions .description").eq(event.to).show();
+
+          $.each(players, function (index, value) {
+            players[index].pause();
+          });
+
+          var slideName = "";
+
+          switch (event.to) {
+            case 0:
+              slideName = "Donna";
+              break;
+            case 1:
+              slideName = "Kait";
+              break;
+            case 2:
+              slideName = "Alicia";
+              break;
+            case 3:
+              slideName = "Amber";
+              break;
+            case 4:
+              slideName = "Glenn";
+              break;
+            default:
+          }
+
+          dataLayer.push({
+            event: "carouselSlide",
+            slideIndex: event.to,
+            slideName: slideName,
+          });
+
+          $(".carousel-control-next").removeClass("hovered");
+        });
+
+        $(".carousel").on("slide.bs.carousel", function (event) {
+          if (event.direction == "left")
+            $(".carousel-control-next").addClass("hovered");
+        });
+
+        $(".modal").on("hide.bs.modal", function (event) {
+          if (event.target.id != "aboutToBegin") {
+            dataLayer.push({
+              event: "artistModalClose",
+              closeModalName: event.target.dataset.artist,
+            });
+          }
+
+          if (event.target.id == "aboutToBegin") {
+            dataLayer.push({
+              event: "aboutToBeginModalClose",
+            });
+          }
+        });
+
+        $(".modal").on("show.bs.modal", function (event) {
+          if (event.target.id != "aboutToBegin") {
+            dataLayer.push({
+              event: "artistModalClose",
+              closeModalName: event.target.dataset.artist,
+            });
+
+            $(".carousel").carousel("pause");
+          }
+        });
+
+        var d = new Date();
+        var n = d.getTimezoneOffset();
+
+        console.log(d);
+        console.log(n);
+
+        testevent1();
+        usemployevent();
+        japanemployevent();
+        euemployevent();
+        publicevent();
+        setInterval(testevent1, 60 * 1000);
+        setInterval(usemployevent, 60 * 1000);
+        setInterval(japanemployevent, 60 * 1000);
+        setInterval(euemployevent, 60 * 1000);
+        setInterval(publicevent, 60 * 1000);
+      });
+
+      function testevent1() {
+        var now = moment(new Date()); //todays date
+        var end = moment("Nov 6 2020 15:39:00 GMT-0500"); // another date
+        var duration = moment.duration(now.diff(end));
+        var minutes = duration.asMinutes();
+
+        console.log(minutes + " until us test event");
+
+        if (minutes > -1 && minutes < 15) {
+          console.log("show");
+          $("#aboutToBegin").modal("show");
+
+          dataLayer.push({
+            event: "aboutToBeginModalOpen",
+            time: moment.utc().valueOf(),
+          });
+        }
+      }
+
+      function usemployevent() {
+        var now = moment(new Date()); //todays date
+        var end = moment("Nov 9 2020 12:30:00 GMT-0500"); // another date
+        var duration = moment.duration(now.diff(end));
+        var minutes = duration.asMinutes();
+
+        console.log(minutes + " until us employee event");
+
+        if (minutes > -1 && minutes < 15) {
+          console.log("show");
+          $("#aboutToBegin").modal("show");
+
+          dataLayer.push({
+            event: "aboutToBeginModalOpen",
+            time: moment.utc().valueOf(),
+          });
+        }
+      }
+
+      function japanemployevent() {
+        var now = moment(new Date()); //todays date
+        var end = moment("Nov 9 2020 22:30:00 GMT-0500"); // another date
+        var duration = moment.duration(now.diff(end));
+        var minutes = duration.asMinutes();
+
+        console.log(minutes + " until japan employee event");
+
+        if (minutes > -1 && minutes < 15) {
+          console.log("show");
+          $("#aboutToBegin").modal("show");
+
+          dataLayer.push({
+            event: "aboutToBeginModalOpen",
+            time: moment.utc().valueOf(),
+          });
+        }
+      }
+
+      function euemployevent() {
+        var now = moment(new Date()); //todays date
+        var end = moment("Nov 10 2020 6:30:00 GMT-0500"); // another date
+        var duration = moment.duration(now.diff(end));
+        var minutes = duration.asMinutes();
+
+        console.log(minutes + " until eu employee event");
+
+        if (minutes > -1 && minutes < 15) {
+          console.log("show");
+          $("#aboutToBegin").modal("show");
+
+          dataLayer.push({
+            event: "aboutToBeginModalOpen",
+            time: moment.utc().valueOf(),
+          });
+        }
+      }
+
+      function publicevent() {
+        var now = moment(new Date()); //todays date
+        var end = moment("Nov 17 2020 18:30:00 GMT-0500"); // another date
+        var duration = moment.duration(now.diff(end));
+        var minutes = duration.asMinutes();
+
+        console.log(minutes + " until public event");
+
+        if (minutes > -1 && minutes < 15) {
+          console.log("show");
+          $("#aboutToBegin").modal("show");
+
+          dataLayer.push({
+            event: "aboutToBeginModalOpen",
+            time: moment.utc().valueOf(),
+          });
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript
+      ><iframe
+        src="https://www.googletagmanager.com/ns.html?id=GTM-M6DFJDF"
+        height="0"
+        width="0"
+        style="display: none; visibility: hidden"
+      ></iframe
+    ></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+
+    <div class="fluid-container">
+      <nav class="d-lg-none">
+        <a
+          target="_parent"
+          href="https://amysterytome.hubb.me/schedule-builder/home"
+          id="mobilelobby"
+        >
+          <svg
+            width="1em"
+            height="1em"
+            viewBox="0 0 16 16"
+            class="bi bi-caret-left-fill"
+            fill="currentColor"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M3.86 8.753l5.482 4.796c.646.566 1.658.106 1.658-.753V3.204a1 1 0 0 0-1.659-.753l-5.48 4.796a1 1 0 0 0 0 1.506z"
+            />
+          </svg>
+          BACK TO LOBBY
+        </a>
+        <a
+          href="https://amysterytome.hubb.me/schedule-builder/pages/Index/Theater"
+          target="_parent"
+          id="mobiletheater"
+        >
+          GO TO THEATER
+          <svg
+            width="1em"
+            height="1em"
+            viewBox="0 0 16 16"
+            class="bi bi-caret-right-fill"
+            fill="currentColor"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M12.14 8.753l-5.482 4.796c-.646.566-1.658.106-1.658-.753V3.204a1 1 0 0 1 1.659-.753l5.48 4.796a1 1 0 0 1 0 1.506z"
+            />
+          </svg>
+        </a>
+      </nav>
+      <div class="buttons d-none d-lg-flex">
+        <a
+          href="https://amysterytome.hubb.me/schedule-builder/home"
+          class="button"
+          target="_parent"
+          id="lobby"
+        >
+          <svg
+            width="1em"
+            height="1em"
+            viewBox="0 0 16 16"
+            class="bi bi-caret-left-fill"
+            fill="currentColor"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M3.86 8.753l5.482 4.796c.646.566 1.658.106 1.658-.753V3.204a1 1 0 0 0-1.659-.753l-5.48 4.796a1 1 0 0 0 0 1.506z"
+            />
+          </svg>
+          BACK TO LOBBY
+        </a>
+        <a
+          href="https://amysterytome.hubb.me/schedule-builder/pages/Index/Theater"
+          target="_parent"
+          class="button"
+          id="theater"
+        >
+          GO TO THEATER
+          <svg
+            width="1em"
+            height="1em"
+            viewBox="0 0 16 16"
+            class="bi bi-caret-right-fill"
+            fill="currentColor"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M12.14 8.753l-5.482 4.796c-.646.566-1.658.106-1.658-.753V3.204a1 1 0 0 1 1.659-.753l5.48 4.796a1 1 0 0 1 0 1.506z"
+            />
+          </svg>
+        </a>
+      </div>
+      <div class="content">
+        <div
+          id="carouselControls"
+          class="carousel slide carousel-animation"
+          data-ride="carousel"
+        >
+          <div class="carousel-outer">
+            <div class="carousel-hider">
+              <div class="carousel-inner">
+                <div class="carousel-item active">
+                  <div style="padding: 56.25% 0 0 0; position: relative">
+                    <iframe
+                      src="https://player.vimeo.com/video/471169029?title=0&byline=0&portrait=0"
+                      style="
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                      "
+                      frameborder="0"
+                      allow="autoplay; fullscreen"
+                      allowfullscreen
+                    ></iframe>
+                  </div>
+                </div>
+                <div class="carousel-item">
+                  <div style="padding: 56.25% 0 0 0; position: relative">
+                    <iframe
+                      src="https://player.vimeo.com/video/471169004?title=0&byline=0&portrait=0"
+                      style="
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                      "
+                      frameborder="0"
+                      allow="autoplay; fullscreen"
+                      allowfullscreen
+                    ></iframe>
+                  </div>
+                </div>
+                <div class="carousel-item">
+                  <div style="padding: 56.25% 0 0 0; position: relative">
+                    <iframe
+                      src="https://player.vimeo.com/video/471169069?title=0&byline=0&portrait=0"
+                      style="
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                      "
+                      frameborder="0"
+                      allow="autoplay; fullscreen"
+                      allowfullscreen
+                    ></iframe>
+                  </div>
+                </div>
+                <div class="carousel-item">
+                  <div style="padding: 56.25% 0 0 0; position: relative">
+                    <iframe
+                      src="https://player.vimeo.com/video/471169060?title=0&byline=0&portrait=0"
+                      style="
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                      "
+                      frameborder="0"
+                      allow="autoplay; fullscreen"
+                      allowfullscreen
+                    ></iframe>
+                  </div>
+                </div>
+                <div class="carousel-item">
+                  <div style="padding: 56.25% 0 0 0; position: relative">
+                    <iframe
+                      src="https://player.vimeo.com/video/471169099?title=0&byline=0&portrait=0"
+                      style="
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                      "
+                      frameborder="0"
+                      allow="autoplay; fullscreen"
+                      allowfullscreen
+                    ></iframe>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div id="name-plates" class="d-none d-lg-flex">
+            <div class="name-plate">
+              <div class="inside">
+                <div class="image">
+                  <img src="images/ALICIA-PROFILE-M.png" width="100" />
+                </div>
+                <div>
+                  <div class="name">
+                    <span>Alicia Angel: Music from the MG Community</span>
+                  </div>
+                  <div class="copy">
+                    Alicia Angel is an accomplished singer/songwriter who
+                    <a
+                      href="#"
+                      class="openartistmodal"
+                      data-artist="Alicia"
+                      data-toggle="modal"
+                      data-target="#aliciamodal"
+                      >...MORE</a
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="name-plate" style="display: none">
+              <div class="inside">
+                <div class="image">
+                  <img src="images/KAIT-PROFILE-M.png" width="100" />
+                </div>
+                <div>
+                  <div class="name">
+                    <span>Kait Masters: Art with MG</span>
+                  </div>
+                  <div class="copy">
+                    Kait Masters is a visual artist with myasthenia gravis who
+                    uses her paintings to contemplate
+                    <a
+                      href="#"
+                      class="openartistmodal"
+                      data-artist="Kait"
+                      data-toggle="modal"
+                      data-target="#kaitmodal"
+                      >...MORE</a
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="name-plate" style="display: none">
+              <div class="inside">
+                <div class="image">
+                  <img src="images/AMBER-PROFILE-M.png" width="100" />
+                </div>
+                <div>
+                  <div class="name">
+                    <span>Amber Mackenzie</span>
+                    <br />
+                  </div>
+                  <div class="copy">
+                    Amber Mackenzie is the youngest child of Teresa Hill-Putnam,
+                    one of the three participants
+                    <a
+                      href="#"
+                      class="openartistmodal"
+                      data-artist="Amber"
+                      data-toggle="modal"
+                      data-target="#ambermodal"
+                      >...MORE</a
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="name-plate" style="display: none">
+              <div class="inside">
+                <div class="image">
+                  <img src="images/GLENN-PROFILE-M.png" width="100" />
+                </div>
+                <div>
+                  <div class="name">
+                    <span
+                      >Original Music from
+                      <span style="font-style: italic"
+                        >A Mystery to Me</span
+                      ></span
+                    >
+                  </div>
+                  <div class="copy">
+                    The original song “Sun Creeping In” was written by
+                    <a
+                      href="#"
+                      class="openartistmodal"
+                      data-artist="Glenn"
+                      data-toggle="modal"
+                      data-target="#glennmodal"
+                      >...MORE</a
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="name-plate" style="display: none">
+              <div class="inside">
+                <div class="image">
+                  <img src="images/DONNA-PROFILE-M.png" width="100" />
+                </div>
+                <div>
+                  <div class="name">
+                    <span>Donna’s MG Sole Story</span>
+                  </div>
+                  <div class="copy">
+                    Donna Woods shares her contribution to My MG Sole: a
+                    collective
+
+                    <a
+                      href="#"
+                      class="openartistmodal"
+                      data-artist="Donna"
+                      data-toggle="modal"
+                      data-target="#donnamodal"
+                      >...MORE</a
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <a
+            class="carousel-control-prev"
+            href="#carouselControls"
+            role="button"
+            data-slide="prev"
+          >
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="sr-only">Previous</span>
+          </a>
+          <a
+            class="carousel-control-next"
+            href="#carouselControls"
+            role="button"
+            data-slide="next"
+          >
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="sr-only">Next</span>
+          </a>
+        </div>
+        <div id="descriptions" class="d-lg-none">
+          <div class="description">
+            <div class="image">
+              <img src="images/ALICIA-PROFILE-M.png" width="100" />
+            </div>
+            <div class="name">
+              <span>Alicia Angel: Music from the MG Community</span>
+            </div>
+            <div class="copy">
+              Alicia Angel is an accomplished singer/songwriter who lives with
+              myasthenia gravis. Her work spans genres, from pop and R&B, to
+              country and music for children’s television. Over 35 of her
+              original songs have been featured on shows such as Dora the
+              Explorer, Sesame Street and Sprout House. Her song “Ring Another
+              Round” is about how MG has affected her life, not just through the
+              illness itself, but through the support she found in the MG
+              community.
+            </div>
+          </div>
+          <div class="description" style="display: none">
+            <div class="image">
+              <img src="images/KAIT-PROFILE-M.png" width="100" />
+            </div>
+            <div class="name">
+              <span>Kait Masters: Art with MG</span>
+            </div>
+            <div class="copy">
+              Kait Masters is a visual artist with myasthenia gravis who uses
+              her paintings to contemplate the beauty of the natural world
+              around us, and to build a community of artists with chronic
+              illnesses. Though her MG symptoms often prevent her from
+              traveling, Kait uses these watercolor pieces as her own way to
+              enjoy the outdoors and experience the world.
+            </div>
+          </div>
+          <div class="description" style="display: none">
+            <div class="image">
+              <img src="images/AMBER-PROFILE-M.png" width="100" />
+            </div>
+            <div class="name">
+              <span>Amber Mackenzie</span>
+            </div>
+            <div class="copy">
+              Amber Mackenzie is the youngest child of Teresa Hill-Putnam, one
+              of the three participants who share their MG journey with us in
+              <span style="font-style: italic">A Mystery to Me</span>. All of
+              Amber’s life, her mother has lived with myasthenia gravis, so
+              Amber’s connection to the illness is deep and personal. Through
+              singing, she found ways to cope with stress and to express
+              herself. Amber describes her original song, “Fearless”, as her
+              “own little fight song” that she wrote to remind herself to move
+              forward and pursue her dreams despite setbacks and struggles.
+            </div>
+          </div>
+          <div class="description" style="display: none">
+            <div class="image">
+              <img src="images/GLENN-PROFILE-M.png" width="100" />
+            </div>
+            <div class="name">
+              <span
+                >Original Music from
+                <span style="font-style: italic">A Mystery to Me</span></span
+              >
+            </div>
+            <div class="copy">
+              The original song “Sun Creeping In” was written by Casey Trela and
+              Bobak Lotfipour exclusively for
+              <span style="font-style: italic">A Mystery to Me</span>. The song
+              is about finding hope in moments of despair, and how love and
+              laughter in difficult times can feel like rays of light in the
+              darkness. You’ll hear the song in an emotional moment at the end
+              of Glenn’s film, and you can enjoy the full version right here.
+            </div>
+          </div>
+          <div class="description" style="display: none">
+            <div class="image">
+              <img src="images/DONNA-PROFILE-M.png" width="100" />
+            </div>
+            <div class="name">
+              <span>Donna’s MG Sole Story</span>
+            </div>
+            <div class="copy">
+              Donna Woods shares her contribution to My MG Sole: a collective
+              shoe-decorating art project designed to keep the MG community
+              connected during the COVID-19 pandemic. Donna combined painting
+              and original poetry for a unique interpretation of her own MG
+              journey.
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="footer">
+        <div>
+          <a href="https://www.mg-united.com" target="_blank"
+            ><img src="images/mgunited-logo.png" width="111"
+          /></a>
+        </div>
+        <div>
+          <a href="https://www.argenx.com/privacy-policy" target="_blank"
+            >Privacy Policy</a
+          >
+          | &copy;2020 argenx US-NON-20-00210 V1 11/2020
+        </div>
+        <div>
+          <a href="https://www.argenx.com" target="_blank"
+            ><img src="images/argenx_logo.png" width="83"
+          /></a>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="modal fade"
+      id="donnamodal"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="exampleModalCenterTitle"
+      aria-hidden="true"
+      data-artist="Donna"
+    >
+      <div class="modal-dialog info modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="closebut">
+            <a href="#" data-dismiss="modal"
+              ><img src="images/close.svg" width="20"
+            /></a>
+          </div>
+          <div class="modal-body">
+            <div class="description">
+              <div class="image">
+                <img src="images/DONNA-PROFILE-M.png" width="100" />
+              </div>
+              <div class="name">
+                <span>Donna’s MG Sole Story</span>
+              </div>
+              <div class="copy">
+                Donna Woods shares her contribution to My MG Sole: a collective
+                shoe-decorating art project designed to keep the MG community
+                connected during the COVID-19 pandemic. Donna combined painting
+                and original poetry for a unique interpretation of her own MG
+                journey.
+              </div>
+              <div class="closemod">
+                <a href="#" data-dismiss="modal">CLOSE</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="modal fade"
+      id="kaitmodal"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="exampleModalCenterTitle"
+      aria-hidden="true"
+      data-artist="Kait"
+    >
+      <div class="modal-dialog info modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="closebut">
+            <a href="#" data-dismiss="modal"
+              ><img src="images/close.svg" width="20"
+            /></a>
+          </div>
+          <div class="modal-body">
+            <div class="description">
+              <div class="image">
+                <img src="images/KAIT-PROFILE-M.png" width="100" />
+              </div>
+              <div class="name">
+                <span>Kait Masters: Art with MG</span>
+              </div>
+              <div class="copy">
+                Kait Masters is a visual artist with myasthenia gravis who uses
+                her paintings to contemplate the beauty of the natural world
+                around us, and to build a community of artists with chronic
+                illnesses. Though her MG symptoms often prevent her from
+                traveling, Kait uses these watercolor pieces as her own way to
+                enjoy the outdoors and experience the world.
+              </div>
+              <div class="closemod">
+                <a href="#" data-dismiss="modal">CLOSE</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="modal fade"
+      id="aliciamodal"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="exampleModalCenterTitle"
+      aria-hidden="true"
+      data-artist="Alicia"
+    >
+      <div class="modal-dialog info modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="closebut">
+            <a href="#" data-dismiss="modal"
+              ><img src="images/close.svg" width="20"
+            /></a>
+          </div>
+          <div class="modal-body">
+            <div class="description">
+              <div class="image">
+                <img src="images/ALICIA-PROFILE-M.png" width="100" />
+              </div>
+              <div class="name">
+                <span>Alicia Angel: Music from the MG Community</span>
+              </div>
+              <div class="copy">
+                Alicia Angel is an accomplished singer/songwriter who lives with
+                myasthenia gravis. Her work spans genres, from pop and R&B, to
+                country and music for children’s television. Over 35 of her
+                original songs have been featured on shows such as Dora the
+                Explorer, Sesame Street and Sprout House. Her song “Ring Another
+                Round” is about how MG has affected her life, not just through
+                the illness itself, but through the support she found in the MG
+                community.
+              </div>
+              <div class="closemod">
+                <a href="#" data-dismiss="modal">CLOSE</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="modal fade"
+      id="ambermodal"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="exampleModalCenterTitle"
+      aria-hidden="true"
+      data-artist="Amber"
+    >
+      <div class="modal-dialog info modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="closebut">
+            <a href="#" data-dismiss="modal"
+              ><img src="images/close.svg" width="20"
+            /></a>
+          </div>
+          <div class="modal-body">
+            <div class="description">
+              <div class="image">
+                <img src="images/AMBER-PROFILE-M.png" width="100" />
+              </div>
+              <div class="name">
+                <span>Amber Mackenzie</span>
+              </div>
+              <div class="copy">
+                Amber Mackenzie is the youngest child of Teresa Hill-Putnam, one
+                of the three participants who share their MG journey with us in
+                <span style="font-style: italic">A Mystery to Me</span>. All of
+                Amber’s life, her mother has lived with myasthenia gravis, so
+                Amber’s connection to the illness is deep and personal. Through
+                singing, she found ways to cope with stress and to express
+                herself. Amber describes her original song, “Fearless”, as her
+                “own little fight song” that she wrote to remind herself to move
+                forward and pursue her dreams despite setbacks and struggles.
+              </div>
+              <div class="closemod">
+                <a href="#" data-dismiss="modal">CLOSE</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="modal fade"
+      id="glennmodal"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="exampleModalCenterTitle"
+      aria-hidden="true"
+      data-artist="Glenn"
+    >
+      <div class="modal-dialog info modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="closebut">
+            <a href="#" data-dismiss="modal"
+              ><img src="images/close.svg" width="20"
+            /></a>
+          </div>
+          <div class="modal-body">
+            <div class="description">
+              <div class="image">
+                <img src="images/GLENN-PROFILE-M.png" width="100" />
+              </div>
+              <div class="name">
+                <span
+                  >Original Music from
+                  <span style="font-style: italic">A Mystery to Me</span></span
+                >
+              </div>
+              <div class="copy">
+                The original song “Sun Creeping In” was written by Casey Trela
+                and Bobak Lotfipour exclusively for
+                <span style="font-style: italic">A Mystery to Me</span>. The
+                song is about finding hope in moments of despair, and how love
+                and laughter in difficult times can feel like rays of light in
+                the darkness. You’ll hear the song in an emotional moment at the
+                end of Glenn’s film, and you can enjoy the full version right
+                here.
+              </div>
+              <div class="closemod">
+                <a href="#" data-dismiss="modal">CLOSE</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="modal fade"
+      id="aboutToBegin"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="aboutToBegin"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog begin modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="closebut">
+            <a href="#" data-dismiss="modal"
+              ><img src="images/close_white.png" width="20"
+            /></a>
+          </div>
+          <div class="modal-body">
+            <img src="images/megaphone_icon.png" width="80" />
+            <br />
+            <span class="headline">The film has started.</span>
+
+            Please head over to the theater by clicking
+            <a
+              href="https://amysterytome.hubb.me/schedule-builder/pages/Index/Theater"
+              target="_parent"
+              id="aboutToStartGoToTheater"
+              >HERE</a
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="https://player.vimeo.com/api/player.js"></script>
+  </body>
+</html>
